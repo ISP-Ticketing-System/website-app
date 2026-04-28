@@ -1,7 +1,7 @@
 import UserModel from "@/db/models/UserModel";
 import { comparePassword } from "@/helpers/bcrypt";
 import { customError } from "@/helpers/customError";
-import { signToken } from "@/helpers/jwt";
+import { signToken } from "@/helpers/jwt-node";
 import { CustomError } from "@/type";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     // 6. create token
-    const access_token = signToken({
+    const access_token = await signToken({
       _id: user._id.toString(),
       email: user.email,
     });
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { message: "Successfully login", access_token },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return customError(error as CustomError);
