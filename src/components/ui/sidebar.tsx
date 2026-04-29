@@ -27,7 +27,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -86,7 +91,7 @@ const SidebarProvider = React.forwardRef<
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
@@ -107,7 +112,7 @@ const SidebarProvider = React.forwardRef<
         // This sets the cookie to keep the sidebar state.
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },
-      [setOpenProp, open]
+      [setOpenProp, open],
     );
 
     // Helper to toggle the sidebar.
@@ -147,7 +152,15 @@ const SidebarProvider = React.forwardRef<
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [
+        state,
+        open,
+        setOpen,
+        isMobile,
+        openMobile,
+        setOpenMobile,
+        toggleSidebar,
+      ],
     );
 
     return (
@@ -163,7 +176,7 @@ const SidebarProvider = React.forwardRef<
             }
             className={cn(
               "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
-              className
+              className,
             )}
             ref={ref}
             {...props}
@@ -173,16 +186,24 @@ const SidebarProvider = React.forwardRef<
         </TooltipProvider>
       </SidebarContext.Provider>
     );
-  }
+  },
 );
 SidebarProvider.displayName = "SidebarProvider";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   isOpen: boolean;
   onToggle: () => void;
+  mobileOpen: boolean;
+  onMobileOpenChange: (open: boolean) => void;
 }
 
-export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
+export function Sidebar({
+  isOpen,
+  onToggle,
+  mobileOpen,
+  onMobileOpenChange,
+  className,
+}: SidebarProps) {
   const pathname = usePathname();
   const { profile } = useProfileContext();
 
@@ -217,7 +238,7 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
         icon: Wifi,
         href: "/dashboard/services",
         active: pathname.includes("/dashboard/services"),
-      }
+      },
     );
 
     if (profile.role === "Admin") {
@@ -245,7 +266,7 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
           icon: NewspaperIcon,
           href: "/dashboard/news",
           active: pathname.includes("/dashboard/news"),
-        }
+        },
         // {
         //   label: "SLA",
         //   icon: Timer,
@@ -260,9 +281,9 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
     <>
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-20 flex h-full flex-col border-r bg-background transition-all duration-300",
+          "fixed inset-y-0 left-0 z-20 hidden md:flex h-full flex-col border-r bg-background transition-all duration-300",
           isOpen ? "w-64" : "w-[70px]",
-          className
+          className,
         )}
       >
         <div className="flex h-16 items-center border-b px-4">
@@ -287,7 +308,7 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   route.active
                     ? "bg-accent text-accent-foreground"
-                    : "hover:bg-muted"
+                    : "hover:bg-muted",
                 )}
               >
                 <route.icon className="h-5 w-5" />
@@ -301,7 +322,7 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
             variant="ghost"
             className={cn(
               "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted",
-              !isOpen && "justify-center"
+              !isOpen && "justify-center",
             )}
             asChild
           >
@@ -314,32 +335,24 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
       </aside>
 
       {/* Mobile sidebar */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden fixed top-4 left-4 z-40"
-          >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle sidebar</span>
-          </Button>
-        </SheetTrigger>
+      <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
         <SheetContent side="left" className="p-0">
+          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
           <div className="flex h-16 items-center border-b px-4">
             <Logo className="h-8 w-auto" />
           </div>
-          <ScrollArea className="h-[calc(100vh-4rem)]">
+          <ScrollArea className="h-[calc(100vh-4rem-72px)]">
             <nav className="flex flex-col gap-1 p-2">
               {routes.map((route) => (
                 <Link
                   key={route.href}
                   href={route.href}
+                  onClick={() => onMobileOpenChange(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                     route.active
                       ? "bg-accent text-accent-foreground"
-                      : "hover:bg-muted"
+                      : "hover:bg-muted",
                   )}
                 >
                   <route.icon className="h-5 w-5" />
@@ -351,13 +364,11 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
           <div className="border-t p-4">
             <Button
               variant="ghost"
-              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
-              asChild
+              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground"
+              onClick={logout}
             >
-              <Link href="/">
-                <LogOut className="h-5 w-5" />
-                <span>Logout</span>
-              </Link>
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
             </Button>
           </div>
         </SheetContent>
@@ -413,7 +424,7 @@ const SidebarRail = React.forwardRef<
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
         "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
         "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
-        className
+        className,
       )}
       {...props}
     />
@@ -431,7 +442,7 @@ const SidebarInset = React.forwardRef<
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background",
         "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
-        className
+        className,
       )}
       {...props}
     />
@@ -449,7 +460,7 @@ const SidebarInput = React.forwardRef<
       data-sidebar="input"
       className={cn(
         "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-        className
+        className,
       )}
       {...props}
     />
@@ -512,7 +523,7 @@ const SidebarContent = React.forwardRef<
       data-sidebar="content"
       className={cn(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
-        className
+        className,
       )}
       {...props}
     />
@@ -548,7 +559,7 @@ const SidebarGroupLabel = React.forwardRef<
       className={cn(
         "duration-200 flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opa] ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -571,7 +582,7 @@ const SidebarGroupAction = React.forwardRef<
         // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "group-data-[collapsible=icon]:hidden",
-        className
+        className,
       )}
       {...props}
     />
@@ -637,7 +648,7 @@ const sidebarMenuButtonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 const SidebarMenuButton = React.forwardRef<
@@ -658,7 +669,7 @@ const SidebarMenuButton = React.forwardRef<
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const Comp = asChild ? Slot : "button";
     const { isMobile, state } = useSidebar();
@@ -695,7 +706,7 @@ const SidebarMenuButton = React.forwardRef<
         />
       </Tooltip>
     );
-  }
+  },
 );
 SidebarMenuButton.displayName = "SidebarMenuButton";
 
@@ -722,7 +733,7 @@ const SidebarMenuAction = React.forwardRef<
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
           "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
-        className
+        className,
       )}
       {...props}
     />
@@ -744,7 +755,7 @@ const SidebarMenuBadge = React.forwardRef<
       "peer-data-[size=default]/menu-button:top-1.5",
       "peer-data-[size=lg]/menu-button:top-2.5",
       "group-data-[collapsible=icon]:hidden",
-      className
+      className,
     )}
     {...props}
   />
@@ -799,7 +810,7 @@ const SidebarMenuSub = React.forwardRef<
     className={cn(
       "mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5",
       "group-data-[collapsible=icon]:hidden",
-      className
+      className,
     )}
     {...props}
   />
@@ -834,7 +845,7 @@ const SidebarMenuSubButton = React.forwardRef<
         size === "sm" && "text-xs",
         size === "md" && "text-sm",
         "group-data-[collapsible=icon]:hidden",
-        className
+        className,
       )}
       {...props}
     />
