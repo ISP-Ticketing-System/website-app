@@ -127,13 +127,14 @@ export default function NocDashboardPage() {
   };
 
   useEffect(() => {
-    if (initialTickets.length) {
+    if (initialTickets?.length) {
       const filterTicket = initialTickets.filter((ticket) => {
-        let escalationLevel = ticket.slaHistory[ticket.slaHistory.length - 1];
+        const escalationLevel =
+          ticket.slaHistory?.[ticket.slaHistory.length - 1];
 
         return (
           ticket.status !== "Done" &&
-          escalationLevel.handlerRole === profile?.role
+          escalationLevel?.handlerRole === profile?.role
         );
       });
 

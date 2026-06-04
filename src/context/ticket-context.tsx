@@ -27,8 +27,8 @@ export const TicketProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       const data = await getAllData("/tickets");
-      setTickets(data);
-      setallTickets(data);
+      setTickets(data ?? []);
+      setallTickets(data ?? []);
     } catch (error) {
       console.log(error);
     } finally {
