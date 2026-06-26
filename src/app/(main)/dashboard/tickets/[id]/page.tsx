@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Calendar, Clock, Tag, User } from "lucide-react";
+import { AlertCircle, ArrowLeft, Calendar, Clock, Tag, User } from "lucide-react";
 import { format } from "date-fns";
 import { TicketLogTimeline } from "@/components/tickets/ticket-log-timeline";
 import { Log, Sla, Ticket } from "@/db/schema/ticket_collection";
@@ -42,11 +42,14 @@ export default function TicketDetailsPage() {
 
   const [ticketData, setTicketData] = useState<Ticket>();
   const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   const [newNote, setNewNote] = useState("");
   const [newStatus, setNewStatus] = useState("");
   const [newAssignTo, setNewAssignTo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [noteError, setNoteError] = useState("");
+  const [statusError, setStatusError] = useState("");
 
   const [lastLog, setLastLog] = useState<Log | null>(null);
   const [lastSla, setLastSla] = useState<Sla | null>(null);
@@ -56,7 +59,11 @@ export default function TicketDetailsPage() {
     try {
       e.preventDefault();
 
-      if (!newNote.trim()) return;
+      const noteErr = !newNote.trim() ? "Note is required" : "";
+      const statusErr = !newStatus ? "Status is required" : "";
+      setNoteError(noteErr);
+      setStatusError(statusErr);
+      if (noteErr || statusErr) return;
 
       setIsSubmitting(true);
 
@@ -105,17 +112,18 @@ export default function TicketDetailsPage() {
   };
 
   async function fetchData(ticketId: string) {
-    let result = await getDataById(ticketId, "/tickets");
+    const result = await getDataById(ticketId, "/tickets");
+
+    if (!result || result.message) {
+      setNotFound(true);
+      setIsLoading(false);
+      return;
+    }
 
     setTicketData(result);
-
     setLastLog(result.logs[result.logs?.length - 1]);
-
     setLastSla(result.slaHistory[result.slaHistory?.length - 1]);
-
-    let assign = result.escalationLevel === 1 ? "NOC" : "Super NOC";
-    setNewAssignTo(assign);
-
+    setNewAssignTo(result.escalationLevel === 1 ? "NOC" : "Super NOC");
     setIsLoading(false);
   }
 
@@ -142,6 +150,21 @@ export default function TicketDetailsPage() {
 
       {isLoading ? (
         <p>Loading...</p>
+      ) : notFound ? (
+        <Card className="w-full max-w-md mx-auto mt-10">
+          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
+            <AlertCircle className="h-12 w-12 text-muted-foreground" />
+            <div>
+              <h2 className="text-lg font-semibold">Data Tidak Ditemukan</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Tiket yang Anda cari tidak ada atau ID tidak valid.
+              </p>
+            </div>
+            <Button onClick={() => router.push("/dashboard/tickets")}>
+              Kembali ke Daftar Tiket
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <>
           {/* Ticket header card */}
@@ -296,12 +319,20 @@ export default function TicketDetailsPage() {
                               className="space-y-4"
                               onSubmit={(e) => handleAddLogEntry(e)}
                             >
-                              <Textarea
-                                placeholder="Add a note to this ticket..."
-                                className="min-h-[100px]"
-                                value={newNote}
-                                onChange={(e) => setNewNote(e.target.value)}
-                              />
+                              <div className="space-y-1">
+                                <Textarea
+                                  placeholder="Add a note to this ticket..."
+                                  className={`min-h-[100px]${noteError ? " border-red-500" : ""}`}
+                                  value={newNote}
+                                  onChange={(e) => {
+                                    setNewNote(e.target.value);
+                                    if (e.target.value.trim()) setNoteError("");
+                                  }}
+                                />
+                                {noteError && (
+                                  <p className="text-sm text-red-500">{noteError}</p>
+                                )}
+                              </div>
                               <div className="flex flex-col sm:flex-row gap-4">
                                 <div className="flex-1">
                                   <label className="text-sm font-medium mb-1.5 block">
@@ -309,16 +340,17 @@ export default function TicketDetailsPage() {
                                   </label>
                                   <Select
                                     value={newStatus}
-                                    onValueChange={(value) =>
+                                    onValueChange={(value) => {
                                       setNewStatus(
                                         value as
                                           | "In Progress"
                                           | "Escalated"
                                           | "Done"
-                                      )
-                                    }
+                                      );
+                                      setStatusError("");
+                                    }}
                                   >
-                                    <SelectTrigger>
+                                    <SelectTrigger className={statusError ? "border-red-500" : ""}>
                                       <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -339,6 +371,9 @@ export default function TicketDetailsPage() {
                                         ))}
                                     </SelectContent>
                                   </Select>
+                                  {statusError && (
+                                    <p className="text-sm text-red-500">{statusError}</p>
+                                  )}
                                 </div>
                                 {newStatus === "Escalated" && (
                                   <div className="flex-1">
@@ -365,7 +400,7 @@ export default function TicketDetailsPage() {
                               <div className="flex justify-end">
                                 <Button
                                   type="submit"
-                                  disabled={!newNote.trim() || isSubmitting}
+                                  disabled={isSubmitting}
                                 >
                                   {isSubmitting ? "Submitting..." : "Add Note"}
                                 </Button>

@@ -44,19 +44,21 @@ export default function NewTicketPage() {
 
   async function fetchData() {
     try {
-      let customersData = await getAllData("/customers");
+      const [customersData, categoriesData] = await Promise.all([
+        getAllData("/customers"),
+        getAllData("/categories"),
+      ]);
 
-      const filterActiveCustomer = customersData.filter(
-        (customer: any) => customer.status === "Active"
+      setCustomers(
+        (customersData ?? []).filter(
+          (customer: any) => customer.status === "Active"
+        )
       );
-
-      let categoriesData = await getAllData("/categories");
-      const filterCategory = categoriesData.filter(
-        (category: any) => category.isDeleted === false
+      setCategories(
+        (categoriesData ?? []).filter(
+          (category: any) => category.isDeleted === false
+        )
       );
-
-      setCategories(filterCategory);
-      setCustomers(filterActiveCustomer);
     } catch (error) {
       console.log(error, "ini error form ticket");
     } finally {

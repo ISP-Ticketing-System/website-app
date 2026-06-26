@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import {
@@ -54,6 +55,7 @@ export function TicketForm({
 
   const form = useForm<formCreateValue>({
     resolver: zodResolver(FormCreateSchema),
+    shouldFocusError: false,
     defaultValues: {
       customerId: initialData?.customerId || "",
       categoryId: initialData?.categoryId || "",
@@ -172,13 +174,13 @@ export function TicketForm({
             <FormField
               control={form.control}
               name="description"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Detailed description of the issue..."
-                      className="resize-none min-h-[120px]"
+                      className={cn("resize-none min-h-[120px]", fieldState.error ? "border-red-500" : "")}
                       {...field}
                     />
                   </FormControl>

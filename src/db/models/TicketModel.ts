@@ -138,7 +138,7 @@ class TicketModel {
     let data = await Promise.all(
       tickets.map(async (ticket) => {
         let currentHandleUser = await UserModel.getUserById(
-          ticket.currentHandlerId
+          ticket.currentHandlerId,
         );
 
         let logs = await Promise.all(
@@ -146,20 +146,20 @@ class TicketModel {
             let user = await UserModel.getUserById(log.handleBy);
             return {
               ...log,
-              handleByUsername: user.username,
-              handleByRole: user.role,
+              handleByUsername: user?.username ?? "Unknown user",
+              handleByRole: user?.role ?? "-",
             };
-          })
+          }),
         );
 
         ticket.logs = logs;
         ticket.currentHandleUserData = {
-          username: currentHandleUser.username,
-          role: currentHandleUser.role,
+          username: currentHandleUser?.username ?? "Unknown user",
+          role: currentHandleUser?.role ?? "-",
         };
 
         return ticket;
-      })
+      }),
     );
 
     return data;
@@ -261,7 +261,7 @@ class TicketModel {
     }
 
     let currentHandleUser = await UserModel.getUserById(
-      ticket.currentHandlerId
+      ticket.currentHandlerId,
     );
 
     const logs = await Promise.all(
@@ -269,16 +269,16 @@ class TicketModel {
         let user = await UserModel.getUserById(log.handleBy);
         return {
           ...log,
-          handleByUsername: user.username,
-          handleByRole: user.role,
+          handleByUsername: user?.username ?? "Unknown user",
+          handleByRole: user?.role ?? "-",
         };
-      })
+      }),
     );
 
     ticket.logs = logs;
     ticket.currentHandleUserData = {
-      username: currentHandleUser.username,
-      role: currentHandleUser.role,
+      username: currentHandleUser?.username ?? "Unknown user",
+      role: currentHandleUser?.role ?? "-",
     };
 
     return ticket;
@@ -289,7 +289,7 @@ class TicketModel {
 
     const userHandle = await UserModel.getUserById(userId);
     const selectedCategory = await CategoryModel.getCategoryById(
-      body.categoryId
+      body.categoryId,
     );
 
     // jika eskalasi maka buat logSla
@@ -457,7 +457,7 @@ class TicketModel {
       const level = lastSla.level + 1;
 
       const selectedCategory = await CategoryModel.getCategoryById(
-        ticket.categoryId
+        ticket.categoryId,
       );
 
       const newSla = {
@@ -483,7 +483,7 @@ class TicketModel {
             slaHistory: newSla,
           },
         },
-        { returnDocument: "after" }
+        { returnDocument: "after" },
       );
 
       if (!result?._id) {
@@ -504,7 +504,7 @@ class TicketModel {
           logs: log,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
 
     if (!result?._id) {

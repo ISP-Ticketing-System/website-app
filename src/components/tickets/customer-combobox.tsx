@@ -25,7 +25,7 @@ export const CustomerCombobox: React.FC<Props> = ({
     <Controller
       control={control}
       name="customerId"
-      render={({ field }) => {
+      render={({ field, fieldState }) => {
         const selectedCustomer = customers?.find((c) => c._id === field.value);
 
         const filtered = customers?.filter((c) => {
@@ -35,7 +35,9 @@ export const CustomerCombobox: React.FC<Props> = ({
 
         return (
           <div className="space-y-1 mt-1">
-            <label className="text-sm font-medium">Customer</label>
+            <label className="text-sm font-medium">
+              Customer
+            </label>
             <Popover.Root open={open} onOpenChange={setOpen}>
               <Popover.Trigger asChild disabled={isEditMode}>
                 <button
@@ -44,7 +46,8 @@ export const CustomerCombobox: React.FC<Props> = ({
                     "flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm",
                     isEditMode
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : ""
+                      : "",
+                    fieldState.error ? "border-red-500" : ""
                   )}
                 >
                   {selectedCustomer
@@ -99,6 +102,9 @@ export const CustomerCombobox: React.FC<Props> = ({
                 </Popover.Content>
               </Popover.Portal>
             </Popover.Root>
+            {fieldState.error && (
+              <p className="text-sm text-red-500">{fieldState.error.message}</p>
+            )}
           </div>
         );
       }}

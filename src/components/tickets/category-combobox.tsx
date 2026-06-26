@@ -23,12 +23,14 @@ export const CategoryCombobox: React.FC<Props> = ({
     <Controller
       control={control}
       name="categoryId"
-      render={({ field }) => {
+      render={({ field, fieldState }) => {
         const selectedCategory = categories?.find((c) => c._id === field.value);
 
         return (
           <div className="space-y-1 mt-1">
-            <label className="text-sm font-medium">Category</label>
+            <label className="text-sm font-medium">
+              Category
+            </label>
             <Popover.Root open={open} onOpenChange={setOpen}>
               <Popover.Trigger asChild disabled={isEditMode}>
                 <button
@@ -37,7 +39,8 @@ export const CategoryCombobox: React.FC<Props> = ({
                     "flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm",
                     isEditMode
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : ""
+                      : "",
+                    fieldState.error ? "border-red-500" : ""
                   )}
                 >
                   {selectedCategory
@@ -88,6 +91,9 @@ export const CategoryCombobox: React.FC<Props> = ({
                 </Popover.Content>
               </Popover.Portal>
             </Popover.Root>
+            {fieldState.error && (
+              <p className="text-sm text-red-500">{fieldState.error.message}</p>
+            )}
           </div>
         );
       }}

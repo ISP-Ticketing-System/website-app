@@ -31,6 +31,8 @@ export async function POST(request: Request) {
     const access_token = await signToken({
       _id: user._id.toString(),
       email: user.email,
+      role: user.role,
+      username: user.username,
     });
 
     // 7. save data to cookies

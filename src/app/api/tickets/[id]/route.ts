@@ -18,6 +18,10 @@ export async function GET(
 
     let service = await TicketModel.getTicketById(id);
 
+    if (!service) {
+      return NextResponse.json({ message: "Ticket not found" }, { status: 404 });
+    }
+
     return NextResponse.json(service);
   } catch (error) {
     return customError(error as CustomError);

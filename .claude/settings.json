@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node /tmp/diag.mjs)",
+      "Bash(cp /tmp/diag.mjs /Users/salwamunir/Documents/Salwa/Project/isp-ticketing/diag.mjs)",
+      "Bash(node diag.mjs)"
+    ]
+  }
+}
