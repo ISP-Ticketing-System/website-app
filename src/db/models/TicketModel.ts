@@ -417,7 +417,6 @@ class TicketModel {
     lastSla.isBreached = breached;
 
     const userHandle = await UserModel.getUserById(userId);
-
     // jika started
     let assignedRole = "-";
     let newStatus = body.status;
@@ -451,7 +450,6 @@ class TicketModel {
       slaStatus: lastSla.isBreached ? "red" : "green",
       note,
     };
-
     //jika status escalated dan terakhir bisa eskalasi ke super NOC
     if (body.status === "Escalated" && lastSla.level < 3) {
       const level = lastSla.level + 1;
@@ -490,7 +488,6 @@ class TicketModel {
         throw { message: "Ticket not found or not updated", status: 400 };
       }
     }
-
     const result = await this.collection().findOneAndUpdate(
       { _id: new ObjectId(id) },
       {
